@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Gestação – Mais Mãe</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose:    #E8527A;
+    --rose-lt: #F9D4DF;
+    --rose-dk: #C03060;
+    --blush:   #FDF0F4;
+    --cream:   #FFF8FA;
+    --ink:     #2E1A22;
+    --muted:   #9B7080;
+    --card:    #FFFFFF;
+    --shadow:  0 8px 40px rgba(232,82,122,0.13);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--blush);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Background decorative circles */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::before {
+    width: 520px; height: 520px;
+    background: radial-gradient(circle, rgba(232,82,122,0.10) 0%, transparent 70%);
+    top: -180px; right: -160px;
+  }
+  body::after {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(232,82,122,0.07) 0%, transparent 70%);
+    bottom: -120px; left: -100px;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    animation: fadeUp .6s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .logo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--rose);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 99px;
+    margin-bottom: 16px;
+  }
+  .logo-pill span { font-size: 16px; }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 5vw, 34px);
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .header h1 em { color: var(--rose); font-style: italic; }
+  .header p {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 32px 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(232,82,122,0.10);
+  }
+
+  .field-group { margin-bottom: 22px; }
+  .field-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+    letter-spacing: .01em;
+  }
+  .field-group label .hint {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  input[type="date"], input[type="text"] {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--rose-lt);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--cream);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    -webkit-appearance: none;
+  }
+  input[type="date"]:focus, input[type="text"]:focus {
+    border-color: var(--rose);
+    box-shadow: 0 0 0 3px rgba(232,82,122,0.12);
+  }
+
+  .or-divider {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin: 4px 0 18px;
+    position: relative;
+  }
+  .or-divider::before, .or-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%; width: 42%; height: 1px;
+    background: var(--rose-lt);
+  }
+  .or-divider::before { left: 0; }
+  .or-divider::after  { right: 0; }
+
+  /* Weeks/days helper row */
+  .dual-input {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .dual-input .sub-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    display: block;
+    text-align: center;
+  }
+  .dual-input input { text-align: center; font-size: 18px; font-weight: 600; }
+
+  /* CTA */
+  .btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dk) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+    letter-spacing: .02em;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(232,82,122,0.30);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,82,122,0.38); }
+  .btn:active { transform: translateY(0); }
+
+  /* ── Result ── */
+  #result {
+    margin-top: 24px;
+    display: none;
+    animation: fadeUp .4s ease both;
+  }
+
+  .result-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .result-box {
+    background: var(--blush);
+    border-radius: 16px;
+    padding: 16px 14px;
+    border: 1.5px solid rgba(232,82,122,0.12);
+    text-align: center;
+  }
+  .result-box .rb-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .result-box .rb-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--rose);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .result-box .rb-unit {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .result-box.full {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #FDE8EF 0%, #FDF0F4 100%);
+  }
+  .result-box.full .rb-value {
+    font-size: 20px;
+  }
+
+  /* trimestre badge */
+  .trimestre-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--rose);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 99px;
+    margin-top: 10px;
+  }
+
+  /* progress bar */
+  .progress-wrap {
+    background: var(--rose-lt);
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+    margin-top: 14px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--rose) 0%, var(--rose-dk) 100%);
+    border-radius: 99px;
+    transition: width .8s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 5px;
+    letter-spacing: .04em;
+  }
+
+  /* alert strip */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #FFF3CD;
+    border: 1.5px solid #FFD966;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #7A5C00;
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+  .alert span { font-size: 18px; flex-shrink: 0; }
+
+  .reset-btn {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid var(--rose-lt);
+    color: var(--muted);
+    border-radius: 12px;
+    padding: 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: border-color .2s, color .2s;
+  }
+  .reset-btn:hover { border-color: var(--rose); color: var(--rose); }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 20px;
+    line-height: 1.6;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    background: var(--blush);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 24px;
+    gap: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    line-height: 1.3;
+    text-align: center;
+  }
+  .tab-btn.active {
+    background: var(--card);
+    color: var(--rose);
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(232,82,122,0.12);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Seção retroativa ── */
+  .retro-box {
+    background: var(--blush);
+    border: 1.5px dashed rgba(232,82,122,0.30);
+    border-radius: 16px;
+    padding: 18px 16px;
+    margin-bottom: 4px;
+  }
+  .retro-box .retro-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--rose);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .triple-input {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px;
+    gap: 10px;
+    align-items: end;
+  }
+  .triple-input .sub-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+    display: block;
+    text-align: center;
+  }
+  .triple-input input[type="number"] {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--rose);
+    padding: 13px 8px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--rose-lt);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--cream);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus {
+    border-color: var(--rose);
+    box-shadow: 0 0 0 3px rgba(232,82,122,0.12);
+  }
+
+  /* resultado retro */
+  .retro-result {
+    margin-top: 14px;
+    display: none;
+    background: linear-gradient(135deg, #FDE8EF 0%, #FDF0F4 100%);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1.5px solid rgba(232,82,122,0.18);
+    animation: fadeUp .3s ease both;
+    text-align: center;
+  }
+  .retro-result .rr-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .retro-result .rr-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--rose);
+    font-weight: 700;
+  }
+  .retro-result .rr-detail {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="logo-pill"><span>🌸</span> Mais Mãe</div>
+    <h1>Calculadora de <em>Gestação</em></h1>
+    <p>Informe a DPP da cliente para saber a semana atual<br>e a data prevista do parto.</p>
+  </div>
+
+  <div class="card">
+
+    <!-- Abas -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="trocarAba('dpp-tab', this)">🗓️ Calcular pela DPP / DUM</button>
+      <button class="tab-btn" onclick="trocarAba('retro-tab', this)">🔬 Atualizar por Exame</button>
+    </div>
+
+    <!-- ABA 1: DPP / DUM -->
+    <div id="dpp-tab" class="tab-panel active">
+      <div class="field-group">
+        <label>Data Prevista do Parto (DPP) <span class="hint">— informada no documento</span></label>
+        <input type="date" id="dpp" />
+      </div>
+
+      <div class="or-divider">ou informe a DUM</div>
+
+      <div class="field-group">
+        <label>Data da Última Menstruação (DUM) <span class="hint">— opcional</span></label>
+        <input type="date" id="dum" />
+      </div>
+
+      <button class="btn" onclick="calcular()">✦ Calcular Gestação</button>
+    </div>
+
+    <!-- ABA 2: Exame retroativo -->
+    <div id="retro-tab" class="tab-panel">
+      <div class="retro-box">
+        <div class="retro-title">📄 Dados do exame ou laudo</div>
+        <div class="triple-input">
+          <div class="field-group" style="margin-bottom:0">
+            <label>Data do exame <span class="hint">— quando foi feito</span></label>
+            <input type="date" id="retro-data" />
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;color:var(--ink);display:block;margin-bottom:8px;">Semanas</label>
+            <input type="number" id="retro-semanas" min="0" max="45" placeholder="ex: 4" />
+            <span class="sub-label">na época</span>
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;color:var(--ink);display:block;margin-bottom:8px;">Dias +</label>
+            <input type="number" id="retro-dias" min="0" max="6" placeholder="0" />
+            <span class="sub-label">dias extras</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" style="margin-top:16px;" onclick="calcularRetro()">✦ Atualizar para Hoje</button>
+
+      <!-- Resultado retroativo -->
+      <div id="retro-result" class="retro-result">
+        <div class="rr-label">📍 Gestação atual (hoje)</div>
+        <div class="rr-value" id="rr-semanas-hoje">—</div>
+        <div class="rr-detail" id="rr-detalhe">—</div>
+        <div id="rr-trimestre" style="margin-top:8px;"></div>
+      </div>
+
+      <button class="reset-btn" onclick="resetarRetro()" style="margin-top:12px;">↩ Limpar</button>
+    </div>
+
+    <!-- Resultado principal (aba 1) -->
+    <div id="result">
+      <div style="height:1px;background:var(--rose-lt);margin:24px 0 20px;"></div>
+      <div class="result-title">📋 Resultado da Análise</div>
+
+      <div class="result-grid">
+        <div class="result-box">
+          <div class="rb-label">Semanas</div>
+          <div class="rb-value" id="r-semanas">—</div>
+          <div class="rb-unit">semanas de gestação</div>
+        </div>
+        <div class="result-box">
+          <div class="rb-label">Meses</div>
+          <div class="rb-value" id="r-meses">—</div>
+          <div class="rb-unit" id="r-meses-unit">meses de gestação</div>
+        </div>
+        <div class="result-box">
+          <div class="rb-label">Dias extras</div>
+          <div class="rb-value" id="r-dias">—</div>
+          <div class="rb-unit">além das semanas</div>
+        </div>
+        <div class="result-box">
+          <div class="rb-label">Progresso</div>
+          <div class="rb-value" id="r-pct-box">—</div>
+          <div class="rb-unit">da gestação</div>
+        </div>
+        <div class="result-box full">
+          <div class="rb-label">🗓️ Parto previsto para</div>
+          <div class="rb-value" id="r-parto">—</div>
+          <div id="r-trimestre"></div>
+        </div>
+      </div>
+
+      <!-- Barra de progresso -->
+      <div class="progress-wrap">
+        <div class="progress-fill" id="r-progress" style="width:0%"></div>
+      </div>
+      <div class="progress-labels">
+        <span>Concepção</span>
+        <span id="r-pct">0%</span>
+        <span>Parto (40 sem.)</span>
+      </div>
+
+      <div id="r-alerta"></div>
+
+      <button class="reset-btn" onclick="resetar()">↩ Limpar e recalcular</button>
+    </div>
+  </div>
+
+  <p class="footer-note">Cálculo baseado em 280 dias (40 semanas) de gestação padrão.<br>Sempre confirme com laudo médico oficial.</p>
+
+</div>
+
+<script>
+  const MESES = [
+    'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
+  ];
+
+  function parseLocalDate(str) {
+    if (!str) return null;
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  // Converte dias de gestação em meses (gestação = ~9,2 meses = 280 dias)
+  function diasParaMeses(dias) {
+    // Mês gestacional ≈ 30,44 dias
+    return Math.floor(dias / 30.44);
+  }
+
+  function trocarAba(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('result').style.display = 'none';
+  }
+
+  function calcular() {
+    const dppVal = document.getElementById('dpp').value;
+    const dumVal = document.getElementById('dum').value;
+    const hoje   = new Date(); hoje.setHours(0,0,0,0);
+
+    let dpp, dum;
+
+    if (dppVal) {
+      dpp = parseLocalDate(dppVal);
+      dum = new Date(dpp.getTime() - 280 * 86400000);
+    } else if (dumVal) {
+      dum = parseLocalDate(dumVal);
+      dpp = new Date(dum.getTime() + 280 * 86400000);
+    } else {
+      alert('Por favor, informe a DPP ou a DUM.');
+      return;
+    }
+
+    const diasGestados = Math.floor((hoje - dum) / 86400000);
+    const semanas  = Math.floor(diasGestados / 7);
+    const diasExtra = diasGestados % 7;
+    const meses    = diasParaMeses(diasGestados);
+    const pct      = Math.min(Math.round((diasGestados / 280) * 100), 100);
+
+    let trimestre;
+    if (semanas < 13)      trimestre = '1º Trimestre';
+    else if (semanas < 27) trimestre = '2º Trimestre';
+    else                   trimestre = '3º Trimestre';
+
+    const mesParto = MESES[dpp.getMonth()];
+    const anoParto = dpp.getFullYear();
+    const diaParto = dpp.getDate();
+
+    document.getElementById('r-semanas').textContent  = semanas >= 0 ? semanas : '—';
+    document.getElementById('r-dias').textContent     = diasExtra >= 0 ? diasExtra : '—';
+    document.getElementById('r-meses').textContent    = meses >= 0 ? meses : '—';
+    document.getElementById('r-meses-unit').textContent = meses === 1 ? 'mês de gestação' : 'meses de gestação';
+    document.getElementById('r-pct-box').textContent  = pct + '%';
+    document.getElementById('r-parto').textContent    = `${diaParto} de ${mesParto} de ${anoParto}`;
+    document.getElementById('r-trimestre').innerHTML  = `<div class="trimestre-badge">✦ ${trimestre}</div>`;
+    document.getElementById('r-progress').style.width = pct + '%';
+    document.getElementById('r-pct').textContent      = pct + '%';
+
+    let alertaHTML = '';
+    if (diasGestados < 0) {
+      alertaHTML = `<div class="alert"><span>ℹ️</span><strong>Atenção:</strong> A DPP informada está no futuro com base nos dados fornecidos. Verifique se a data está correta.</div>`;
+    } else if (semanas >= 37) {
+      alertaHTML = `<div class="alert"><span>⚠️</span><strong>Gestação a termo!</strong> Com ${semanas} semanas, o parto pode ocorrer a qualquer momento. Priorize o atendimento desta cliente.</div>`;
+    } else if (semanas >= 34) {
+      alertaHTML = `<div class="alert"><span>🔔</span>Com ${semanas} semanas, a cliente está na reta final da gestação. Agilize o processo de análise.</div>`;
+    }
+    document.getElementById('r-alerta').innerHTML = alertaHTML;
+
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function calcularRetro() {
+    const dataExame  = document.getElementById('retro-data').value;
+    const semanasEx  = parseInt(document.getElementById('retro-semanas').value);
+    const diasEx     = parseInt(document.getElementById('retro-dias').value) || 0;
+
+    if (!dataExame || isNaN(semanasEx)) {
+      alert('Preencha a data do exame e as semanas informadas no laudo.');
+      return;
+    }
+
+    const dtExame = parseLocalDate(dataExame);
+    const hoje    = new Date(); hoje.setHours(0,0,0,0);
+
+    // Dias de gestação no momento do exame
+    const diasNoExame = semanasEx * 7 + diasEx;
+
+    // DUM retroativa
+    const dum = new Date(dtExame.getTime() - diasNoExame * 86400000);
+
+    // Dias de gestação hoje
+    const diasHoje   = Math.floor((hoje - dum) / 86400000);
+    const semanasHoje = Math.floor(diasHoje / 7);
+    const diasHojeExtra = diasHoje % 7;
+    const mesesHoje  = diasParaMeses(diasHoje);
+
+    // Dias desde o exame
+    const diasPassados = Math.floor((hoje - dtExame) / 86400000);
+
+    let trimestre;
+    if (semanasHoje < 13)      trimestre = '1º Trimestre';
+    else if (semanasHoje < 27) trimestre = '2º Trimestre';
+    else                       trimestre = '3º Trimestre';
+
+    document.getElementById('rr-semanas-hoje').textContent =
+      `${semanasHoje} sem. e ${diasHojeExtra} dia${diasHojeExtra !== 1 ? 's' : ''}`;
+    document.getElementById('rr-detalhe').textContent =
+      `${mesesHoje} ${mesesHoje === 1 ? 'mês' : 'meses'} de gestação · ${diasPassados} dia${diasPassados !== 1 ? 's' : ''} desde o exame`;
+    document.getElementById('rr-trimestre').innerHTML =
+      `<div class="trimestre-badge">✦ ${trimestre}</div>`;
+
+    const el = document.getElementById('retro-result');
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetar() {
+    document.getElementById('dpp').value = '';
+    document.getElementById('dum').value = '';
+    document.getElementById('result').style.display = 'none';
+  }
+
+  function resetarRetro() {
+    document.getElementById('retro-data').value    = '';
+    document.getElementById('retro-semanas').value = '';
+    document.getElementById('retro-dias').value    = '';
+    document.getElementById('retro-result').style.display = 'none';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const aba = document.querySelector('.tab-panel.active');
+      if (aba && aba.id === 'retro-tab') calcularRetro();
+      else calcular();
+    }
+  });
+</script>
+</body>
+</html>
