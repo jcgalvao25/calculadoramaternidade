@@ -537,7 +537,8 @@
         <div class="result-box">
           <div class="rb-label">Meses</div>
           <div class="rb-value" id="r-meses">—</div>
-          <div class="rb-unit" id="r-meses-unit">meses de gestação</div>
+          <div class="rb-unit" id="r-meses-unit">no Xº mês</div>
+          <div id="r-meses-completos" style="font-size:10px;color:var(--muted);margin-top:5px;"></div>
         </div>
         <div class="result-box">
           <div class="rb-label">Dias extras</div>
@@ -620,11 +621,12 @@
       return;
     }
 
-    const diasGestados = Math.floor((hoje - dum) / 86400000);
-    const semanas  = Math.floor(diasGestados / 7);
-    const diasExtra = diasGestados % 7;
-    const meses    = diasParaMeses(diasGestados);
-    const pct      = Math.min(Math.round((diasGestados / 280) * 100), 100);
+    const diasGestados  = Math.floor((hoje - dum) / 86400000);
+    const semanas       = Math.floor(diasGestados / 7);
+    const diasExtra     = diasGestados % 7;
+    const mesesCompletos = Math.floor(diasGestados / 30.44);
+    const mesCursando   = mesesCompletos + 1;
+    const pct           = Math.min(Math.round((diasGestados / 280) * 100), 100);
 
     let trimestre;
     if (semanas < 13)      trimestre = '1º Trimestre';
@@ -637,8 +639,9 @@
 
     document.getElementById('r-semanas').textContent  = semanas >= 0 ? semanas : '—';
     document.getElementById('r-dias').textContent     = diasExtra >= 0 ? diasExtra : '—';
-    document.getElementById('r-meses').textContent    = meses >= 0 ? meses : '—';
-    document.getElementById('r-meses-unit').textContent = meses === 1 ? 'mês de gestação' : 'meses de gestação';
+    document.getElementById('r-meses').textContent    = diasGestados >= 0 ? mesCursando + 'º' : '—';
+    document.getElementById('r-meses-unit').textContent = 'mês de gestação';
+    document.getElementById('r-meses-completos').textContent = diasGestados >= 0 ? `(${mesesCompletos} ${mesesCompletos === 1 ? 'mês completo' : 'meses completos'})` : '';
     document.getElementById('r-pct-box').textContent  = pct + '%';
     document.getElementById('r-parto').textContent    = `${diaParto} de ${mesParto} de ${anoParto}`;
     document.getElementById('r-trimestre').innerHTML  = `<div class="trimestre-badge">✦ ${trimestre}</div>`;
